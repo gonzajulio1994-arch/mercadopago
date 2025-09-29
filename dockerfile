@@ -1,20 +1,26 @@
-# Imagen con PHP 8.2 y Apache
+# Imagen base con PHP y Composer
 FROM php:8.2-apache
 
+# Instala dependencias necesarias
+RUN apt-get update && apt-get install -y \
+    unzip \
+    git \
+    && docker-php-ext-install pdo pdo_mysql
+
+# Copiar composer desde la imagen oficial
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
+# Establecer directorio de trabajo
 WORKDIR /var/www/html
 
-# Instalar extensiones necesarias
-RUN docker-php-ext-install pdo pdo_mysql
+# Copiar archivos del proyecto
+COPY . .
 
-# Copiar proyecto
-COPY . /var/www/html
-
-# Instalar composer dentro del contenedor
-COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+# Instalar dependencias con composer
 RUN composer install --no-dev --optimize-autoloader
 
-# Puerto expuesto
-EXPOSE 10000
+# Habilitar mod_rewrite (si es necesario)
+RUN a2enmod rewrite
 
-# Levantar servidor PHP embebido
-CMD ["php", "-S", "0.0.0.0:10000", "-t", "/var/www/html"]
+EXPOSE 80
+CMD ["apache2-foreground"]
