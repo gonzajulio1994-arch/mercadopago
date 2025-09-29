@@ -17,7 +17,7 @@ WORKDIR /var/www/html
 COPY . .
 
 # Instalar dependencias con composer
-RUN composer install --no-dev --optimize-autoloader
+RUN composer update --no-dev --optimize-autoloader
 
 # Habilitar mod_rewrite (si es necesario)
 RUN a2enmod rewrite
