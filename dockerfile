@@ -1,11 +1,20 @@
-# Usamos la imagen oficial de PHP con Apache
-FROM php:8.1-apache
+# Imagen con PHP 8.2 y Apache
+FROM php:8.2-apache
 
-# Copiamos los archivos del proyecto al directorio de Apache
-COPY . /var/www/html/
+WORKDIR /var/www/html
 
-# Damos permisos
-RUN chown -R www-data:www-data /var/www/html
+# Instalar extensiones necesarias
+RUN docker-php-ext-install pdo pdo_mysql
 
-# Exponemos el puerto 80 (para acceso web)
-EXPOSE 80
+# Copiar proyecto
+COPY . /var/www/html
+
+# Instalar composer dentro del contenedor
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+RUN composer install --no-dev --optimize-autoloader
+
+# Puerto expuesto
+EXPOSE 10000
+
+# Levantar servidor PHP embebido
+CMD ["php", "-S", "0.0.0.0:10000", "-t", "/var/www/html"]
